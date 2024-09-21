@@ -58,7 +58,7 @@ fun Application.modulo() {
     configurarErroresEnRespuestas()
     configurarAutenticacion()
     configurarProcesadorDeDatosEnSolicitudes()
-    validarModelosEnSolicitudes()
+    configurarValidacionesModelosEnSolicitudes()
     configurarRutas()
 }
 
@@ -76,11 +76,11 @@ private fun Application.configurarInyeccionDeDependencias() {
     install(Koin) {
         modules(
             module {
-                single {
+                single<MongoClient> {
                     val url = System.getenv("URL_DE_CONEXION_MONGO_DB")
                     MongoClient.create(url)
                 }
-                single {
+                single<MongoDatabase> {
                     val db = System.getenv("BASE_DE_DATOS")
                     get<MongoClient>().getDatabase(db)
                 }
@@ -208,7 +208,7 @@ private fun Application.configurarProcesadorDeDatosEnSolicitudes() {
     }
 }
 
-private fun Application.validarModelosEnSolicitudes() {
+private fun Application.configurarValidacionesModelosEnSolicitudes() {
     install(RequestValidation) {
         validate<UsuarioReq> { it.validarFormato() }
         validate<InicioDeSesionReq> { it.validarFormato() }

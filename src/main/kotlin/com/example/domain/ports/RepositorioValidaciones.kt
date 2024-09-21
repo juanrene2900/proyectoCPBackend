@@ -13,5 +13,8 @@ interface RepositorioValidaciones {
 
     suspend fun validarRostro(call: ApplicationCall, validarRostro: ValidarRostroReq)
 
-    suspend fun enviarCodigo(idUsuario: ObjectId, metodoDeAutenticacion: MetodoDeAutenticacion): RespuestaEnvioCodigo
+    suspend fun enviarCodigoAleatorio(
+        idUsuario: ObjectId,
+        metodoDeAutenticacion: MetodoDeAutenticacion
+    ): RespuestaEnvioCodigo
 }

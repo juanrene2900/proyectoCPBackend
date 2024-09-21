@@ -36,16 +36,18 @@ class ImplementacionRepositorioValidaciones(
 
     override suspend fun validarCodigo(call: ApplicationCall, validarCodigo: ValidarCodigoReq) {
         val idUsuario = ObjectId(call.principal<JWTPrincipal>()!!.subject)
+
         val usuario = repositorioUsuarios.obtenerUsuario(idUsuario)
             ?: return call.respond(HttpStatusCode.Unauthorized)
 
-        val cincoMinutosAntes = Instant.now().minusSeconds(5.minutes.inWholeSeconds)
+        val cincoMinutosAntesDeLaHoraActual = Instant.now().minusSeconds(5.minutes.inWholeSeconds)
+
         val filtroCodigo = Filters.and(
             Filters.eq(CodigoUsuario::codigo.serialName, validarCodigo.codigo),
             Filters.eq(CodigoUsuario::usuario.serialName, idUsuario),
             Filters.gte(
                 CodigoUsuario::fechaDeCreacion.serialName,
-                BsonDateTime(cincoMinutosAntes.toEpochMilli())
+                BsonDateTime(cincoMinutosAntesDeLaHoraActual.toEpochMilli())
             )
         )
 
@@ -63,10 +65,12 @@ class ImplementacionRepositorioValidaciones(
 
     override suspend fun validarRostro(call: ApplicationCall, validarRostro: ValidarRostroReq) {
         val idUsuario = ObjectId(call.principal<JWTPrincipal>()!!.subject)
+
         val usuario = repositorioUsuarios.obtenerUsuario(idUsuario)
             ?: return call.respond(HttpStatusCode.Unauthorized)
 
-        val rostroUsuarioEnBase64 = usuario.imagenDelRostroEnBase64 ?: return call.respond(HttpStatusCode.Unauthorized)
+        val rostroUsuarioEnBase64 = usuario.imagenDelRostroEnBase64
+            ?: return call.respond(HttpStatusCode.Unauthorized)
 
         val sonRostrosIguales = DetectorDeRostros.comparar(
             rostroGuardado = rostroUsuarioEnBase64,
@@ -82,7 +86,7 @@ class ImplementacionRepositorioValidaciones(
         call.respond(HttpStatusCode.Unauthorized)
     }
 
-    override suspend fun enviarCodigo(
+    override suspend fun enviarCodigoAleatorio(
         idUsuario: ObjectId,
         metodoDeAutenticacion: MetodoDeAutenticacion,
     ): RespuestaEnvioCodigo {
@@ -91,16 +95,17 @@ class ImplementacionRepositorioValidaciones(
                 ?: return RespuestaEnvioCodigo.ERROR
 
             // Eliminamos todos los códigos generados anteriormente
-            val filtroCodigos = Filters.eq(CodigoUsuario::usuario.serialName, usuario.email)
+            val filtroCodigos = Filters.eq(CodigoUsuario::usuario.serialName, usuario.id)
             val eliminacion = codigos.deleteMany(filtroCodigos)
             if (!eliminacion.wasAcknowledged()) {
                 return RespuestaEnvioCodigo.ERROR
             }
 
             val codigo = generarCodigoAleatorio(longitud = 6)
-            val codigoUsuario = CodigoUsuario(codigo = codigo, usuario = usuario.id)
 
+            val codigoUsuario = CodigoUsuario(codigo = codigo, usuario = usuario.id)
             val insercion = codigos.insertOne(codigoUsuario)
+
             if (insercion.wasAcknowledged() && insercion.insertedId != null) {
                 val contenido = """
                     Buen día, ${usuario.nombresYApellidos}

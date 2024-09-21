@@ -30,22 +30,24 @@ class ImplementacionRepositorioLogin(
             ?: return call.respond(HttpStatusCode.Unauthorized)
 
         val contrasenasCoinciden = Password.check(inicioDeSesion.contrasena, usuario.contrasena).withArgon2()
+
         if (contrasenasCoinciden) {
             if (inicioDeSesion.metodoDeAutenticacion == MetodoDeAutenticacion.RECONOCIMIENTO_FACIAL) {
                 enviarTokenAlCliente(idUsuario = usuario.id)
             } else {
-                val respuesta = repositorioValidaciones.enviarCodigo(
+                val respuesta = repositorioValidaciones.enviarCodigoAleatorio(
                     metodoDeAutenticacion = inicioDeSesion.metodoDeAutenticacion,
                     idUsuario = usuario.id
                 )
 
-                return if (respuesta == RespuestaEnvioCodigo.ENVIADO) {
+                if (respuesta == RespuestaEnvioCodigo.ENVIADO) {
                     enviarTokenAlCliente(idUsuario = usuario.id)
                 } else {
                     call.respond(HttpStatusCode.InternalServerError)
                 }
             }
+        } else {
+            call.respond(HttpStatusCode.Unauthorized)
         }
-        call.respond(HttpStatusCode.Unauthorized)
     }
 }

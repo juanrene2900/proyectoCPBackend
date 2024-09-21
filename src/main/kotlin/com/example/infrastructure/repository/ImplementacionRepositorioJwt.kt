@@ -28,7 +28,7 @@ class ImplementacionRepositorioJwt(db: MongoDatabase) : RepositorioJwt {
         val duracion = Date(System.currentTimeMillis() + 1.hours.inWholeMilliseconds)
 
         val jwt = JWT.create()
-            .withSubject(idUsuario.toHexString()) // En los argumentos agregamos el id del usuario
+            .withSubject(idUsuario.toHexString()) // En los argumentos agregamos el ID del usuario
             .withAudience(System.getenv("JWT_AUDIENCIA"))
             .withIssuer(System.getenv("JWT_EMISOR"))
             .withExpiresAt(duracion)
