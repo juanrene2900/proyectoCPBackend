@@ -3,6 +3,7 @@ package com.example.application.req
 import com.example.MetodosDeAutenticacionSerializer
 import com.example.RolesSerializer
 import com.example.domain.entities.Usuario
+import com.example.enums.EstadoDeCuenta
 import com.example.enums.MetodoDeAutenticacion
 import com.example.enums.Rol
 import com.example.utils.ValidadorDeCedulas
@@ -64,7 +65,7 @@ fun UsuarioReq.validarFormato(): ValidationResult {
     return ValidationResult.Valid
 }
 
-fun UsuarioReq.convertirADominio(): Usuario {
+fun UsuarioReq.convertirADominio(usuario: ObjectId? = null): Usuario {
     val contrasenaHasheada = Password.hash(contrasena).withArgon2().result
 
     return Usuario(
@@ -77,6 +78,8 @@ fun UsuarioReq.convertirADominio(): Usuario {
         contrasena = contrasenaHasheada,
         imagenDelRostroEnBase64,
         rol,
-        metodoDeAutenticacion
+        metodoDeAutenticacion,
+        estado = EstadoDeCuenta.ACTIVO,
+        admin = usuario
     )
 }

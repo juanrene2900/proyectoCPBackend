@@ -7,7 +7,7 @@ import com.example.enums.RespuestaEnvioCodigo
 import io.ktor.server.application.*
 import org.bson.types.ObjectId
 
-interface RepositorioValidaciones {
+interface RepoValidaciones {
 
     suspend fun validarCodigo(call: ApplicationCall, validarCodigo: ValidarCodigoReq)
 

@@ -3,15 +3,15 @@ package com.example
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
 import com.example.application.req.*
-import com.example.domain.ports.RepositorioJwt
-import com.example.domain.ports.RepositorioLogin
-import com.example.domain.ports.RepositorioUsuarios
-import com.example.domain.ports.RepositorioValidaciones
+import com.example.domain.ports.RepoJwt
+import com.example.domain.ports.RepoLogin
+import com.example.domain.ports.RepoUsuarios
+import com.example.domain.ports.RepoValidaciones
 import com.example.enums.EstadoDeCuenta
-import com.example.infrastructure.repository.ImplementacionRepositorioJwt
-import com.example.infrastructure.repository.ImplementacionRepositorioLogin
-import com.example.infrastructure.repository.ImplementacionRepositorioUsuarios
-import com.example.infrastructure.repository.ImplementacionRepositorioValidaciones
+import com.example.infrastructure.repository.ImplRepoLogin
+import com.example.infrastructure.repository.ImplRepoUsuarios
+import com.example.infrastructure.repository.ImplRepoValidaciones
+import com.example.infrastructure.repository.ImplRepositorioJwt
 import com.example.plugins.configurarRutas
 import com.mongodb.kotlin.client.coroutine.MongoClient
 import com.mongodb.kotlin.client.coroutine.MongoDatabase
@@ -38,14 +38,13 @@ import org.bson.types.ObjectId
 import org.koin.dsl.module
 import org.koin.ktor.ext.inject
 import org.koin.ktor.plugin.Koin
-import org.opencv.core.Core
 
 fun main() {
-    System.loadLibrary(Core.NATIVE_LIBRARY_NAME)
+    // System.loadLibrary(Core.NATIVE_LIBRARY_NAME)
 
     embeddedServer(
         Netty,
-        port = 8080,
+        port = 8081,
         host = "localhost",
         module = Application::modulo
     ).start(wait = true)
@@ -86,30 +85,30 @@ private fun Application.configurarInyeccionDeDependencias() {
                 }
             },
             module {
-                single<RepositorioUsuarios> {
+                single<RepoUsuarios> {
                     val db = get<MongoDatabase>()
-                    ImplementacionRepositorioUsuarios(db)
+                    ImplRepoUsuarios(db)
                 }
-                single<RepositorioJwt> {
+                single<RepoJwt> {
                     val db = get<MongoDatabase>()
-                    ImplementacionRepositorioJwt(db)
+                    ImplRepositorioJwt(db)
                 }
-                single<RepositorioValidaciones> {
+                single<RepoValidaciones> {
                     val db = get<MongoDatabase>()
-                    val repositorioUsuarios = get<RepositorioUsuarios>()
-                    val repositorioJwt = get<RepositorioJwt>()
+                    val repoUsuarios = get<RepoUsuarios>()
+                    val repoJwt = get<RepoJwt>()
 
-                    ImplementacionRepositorioValidaciones(db, repositorioUsuarios, repositorioJwt)
+                    ImplRepoValidaciones(db, repoUsuarios, repoJwt)
                 }
-                single<RepositorioLogin> {
-                    val repositorioUsuarios = get<RepositorioUsuarios>()
-                    val repositorioJwt = get<RepositorioJwt>()
-                    val repositorioValidaciones = get<RepositorioValidaciones>()
+                single<RepoLogin> {
+                    val repoUsuarios = get<RepoUsuarios>()
+                    val repoJwt = get<RepoJwt>()
+                    val repoValidaciones = get<RepoValidaciones>()
 
-                    ImplementacionRepositorioLogin(
-                        repositorioUsuarios,
-                        repositorioJwt,
-                        repositorioValidaciones,
+                    ImplRepoLogin(
+                        repoUsuarios,
+                        repoJwt,
+                        repoValidaciones,
                     )
                 }
             }
@@ -118,10 +117,10 @@ private fun Application.configurarInyeccionDeDependencias() {
 }
 
 private fun Application.crearIndicesDeColecciones() {
-    val repositorioUsuarios by inject<RepositorioUsuarios>()
+    val repoUsuarios by inject<RepoUsuarios>()
 
     runBlocking {
-        repositorioUsuarios.crearIndicesDeColeccion()
+        repoUsuarios.crearIndicesDeColeccion()
     }
 }
 
@@ -149,8 +148,8 @@ private fun Application.configurarErroresEnRespuestas() {
 }
 
 private fun Application.configurarAutenticacion() {
-    val repositorioUsuarios by inject<RepositorioUsuarios>()
-    val repositorioJwt by inject<RepositorioJwt>()
+    val repoUsuarios by inject<RepoUsuarios>()
+    val repoJwt by inject<RepoJwt>()
 
     install(Authentication) {
         jwt {
@@ -163,20 +162,20 @@ private fun Application.configurarAutenticacion() {
                     .build()
             )
             validate { credencial ->
-                // El jwt es válido, pero vamos a hacer validaciones extras
+                // El jwt es válido, pero vamos a hacer validaciones extras.
 
                 val idUsuario = ObjectId(credencial.subject!!)
 
-                // 1. Verificar si existe en nuestra db (recordemos que solo se puede tener un jwt a la vez)
+                // 1. Verificar si existe en nuestra db (recordemos que solo se puede tener un jwt a la vez).
                 val jwt = this.request.headers[HttpHeaders.Authorization]!!
-                val jwtExiste = repositorioJwt.jwtExiste(idUsuario, jwt)
+                val jwtExiste = repoJwt.jwtExiste(idUsuario, jwt)
 
                 if (!jwtExiste) {
                     return@validate null
                 }
 
-                // 2. Verificar si el dueño de este jwt (usuario) existe y está activo
-                val usuario = repositorioUsuarios.obtenerUsuario(idUsuario)
+                // 2. Verificar si el dueño de este jwt (usuario) existe y está activo.
+                val usuario = repoUsuarios.obtenerUsuario(idUsuario)
                 val usuarioEsValido = usuario?.estado == EstadoDeCuenta.ACTIVO
 
                 if (!usuarioEsValido) {

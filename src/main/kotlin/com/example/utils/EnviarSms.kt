@@ -17,7 +17,7 @@ fun enviarSms(celularDelDestinatario: String, contenido: String): Boolean {
         contenido
     ).create()
 
-    // Verificamos que el estado de la respuesta sea 'queued'
-    // Eso quiere decir que el sms se ha puesto en cola y será enviado en unos momentos
+    // Verificamos que el estado de la respuesta sea 'queued'.
+    // Eso quiere decir que el sms se ha puesto en cola y será enviado en unos momentos.
     return mensaje.status == Message.Status.QUEUED
 }

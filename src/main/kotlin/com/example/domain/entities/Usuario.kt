@@ -40,7 +40,7 @@ data class Usuario(
     val metodoDeAutenticacion: MetodoDeAutenticacion?,
 
     @Serializable(with = EstadosDeCuentaSerializer::class)
-    val estado: EstadoDeCuenta = EstadoDeCuenta.ACTIVO,
+    val estado: EstadoDeCuenta,
 
     @Contextual
     @SerialName("fecha_de_creacion")
@@ -49,10 +49,16 @@ data class Usuario(
     @Contextual
     @SerialName("fecha_de_actualizacion")
     val fechaDeActualizacion: BsonDateTime = fechaActual(),
+
+    // Define a qué usuario le pertenece este usuario.
+    // En otras palabras, a qué Admin pertenece este Usuario.
+    @Contextual
+    val admin: ObjectId? = null,
 )
 
 fun Usuario.convertirARespuesta(token: String) = UsuarioRes(
     nombresYApellidos,
     rol,
-    token
+    token,
+    email
 )

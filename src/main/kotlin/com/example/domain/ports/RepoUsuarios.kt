@@ -5,13 +5,17 @@ import com.example.domain.entities.Usuario
 import io.ktor.server.application.*
 import org.bson.types.ObjectId
 
-interface RepositorioUsuarios {
+interface RepoUsuarios {
 
     suspend fun crearUsuario(call: ApplicationCall, usuario: UsuarioReq)
+
+    suspend fun crearCliente(call: ApplicationCall, usuario: UsuarioReq)
 
     suspend fun obtenerUsuario(idUsuario: ObjectId): Usuario?
 
     suspend fun obtenerUsuario(email: String): Usuario?
+
+    suspend fun listarClientes(call: ApplicationCall)
 
     suspend fun crearIndicesDeColeccion()
 }

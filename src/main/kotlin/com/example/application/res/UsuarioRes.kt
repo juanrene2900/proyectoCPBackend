@@ -15,4 +15,6 @@ data class UsuarioRes(
     val rol: Rol,
 
     val token: String,
+
+    val email: String,
 )
