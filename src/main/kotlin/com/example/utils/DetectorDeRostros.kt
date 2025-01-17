@@ -3,6 +3,7 @@ package com.example.utils
 import org.opencv.core.Mat
 import org.opencv.core.MatOfByte
 import org.opencv.core.MatOfInt
+import org.opencv.face.Face
 import org.opencv.face.LBPHFaceRecognizer
 import org.opencv.imgcodecs.Imgcodecs
 import org.opencv.imgproc.Imgproc
@@ -27,7 +28,7 @@ class DetectorDeRostros private constructor() {
         }
 
         private fun compararRostros(rostroGuardado: Mat, rostroAComparar: Mat): Boolean {
-            val reconocimientoFacial = LBPHFaceRecognizer.create()
+            val reconocimientoFacial = Face.createLBPHFaceRecognizer()
 
             // Convertimos las imágenes a escala de grises
             val rostroGuardadoGris = Mat()
