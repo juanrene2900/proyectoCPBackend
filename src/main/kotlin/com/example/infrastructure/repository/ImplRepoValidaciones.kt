@@ -63,6 +63,33 @@ class ImplRepoValidaciones(
         call.respond(HttpStatusCode.Unauthorized)
     }
 
+    override suspend fun validarCodigoPorEmail(email: String, validarCodigo: ValidarCodigoReq) {
+        val cincoMinutosAntesDeLaHoraActual = Instant.now().minusSeconds(5.minutes.inWholeSeconds)
+
+        // Buscamos el código en sí.
+        val filtroCodigo = Filters.and(
+            Filters.eq(CodigoUsuario::codigo.serialName, validarCodigo.codigo),
+            Filters.gte(
+                CodigoUsuario::fechaDeCreacion.serialName,
+                BsonDateTime(cincoMinutosAntesDeLaHoraActual.toEpochMilli())
+            )
+        )
+        val codigo = codigos.findOneAndDelete(filtroCodigo)
+
+        if (codigo != null) {
+            // Buscamos el email con id del usuario
+            val usuario = repoUsuarios.obtenerUsuario(codigo.usuario)
+                ?: throw Exception("Usuario no encontrado")
+
+            if (usuario.email != email) {
+                throw Exception("El email no coincide con el usuario")
+            }
+            // Tod0 fue bien, continuar con el proceso
+            return
+        }
+        throw Exception("Código inválido")
+    }
+
     override suspend fun validarRostro(call: ApplicationCall, validarRostro: ValidarRostroReq) {
         val idUsuario = ObjectId(call.principal<JWTPrincipal>()!!.subject)
 
@@ -110,7 +137,7 @@ class ImplRepoValidaciones(
                 val contenido = """
                     Buen día, ${usuario.nombresYApellidos}
                     
-                    Use el siguiente código para iniciar sesión.
+                    Use el siguiente código para continuar la operación.
                     El código es válido por 5 minutos. Por favor no lo comparta con nadie.
                     
                     $codigo

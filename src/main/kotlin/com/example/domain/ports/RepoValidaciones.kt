@@ -11,6 +11,8 @@ interface RepoValidaciones {
 
     suspend fun validarCodigo(call: ApplicationCall, validarCodigo: ValidarCodigoReq)
 
+    suspend fun validarCodigoPorEmail(email: String, validarCodigo: ValidarCodigoReq)
+
     suspend fun validarRostro(call: ApplicationCall, validarRostro: ValidarRostroReq)
 
     suspend fun enviarCodigoAleatorio(

@@ -37,6 +37,7 @@ data class Usuario(
     val rol: Rol,
 
     @Serializable(with = MetodosDeAutenticacionSerializer::class)
+    @SerialName("metodo_de_autenticacion")
     val metodoDeAutenticacion: MetodoDeAutenticacion?,
 
     @Serializable(with = EstadosDeCuentaSerializer::class)

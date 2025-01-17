@@ -1,15 +1,15 @@
 package com.example.plugins
 
-import com.example.application.req.InicioDeSesionReq
-import com.example.application.req.UsuarioReq
-import com.example.application.req.ValidarCodigoReq
-import com.example.application.req.ValidarRostroReq
+import com.example.application.req.*
 import com.example.domain.ports.RepoLogin
 import com.example.domain.ports.RepoUsuarios
 import com.example.domain.ports.RepoValidaciones
+import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
+import io.ktor.server.auth.jwt.*
 import io.ktor.server.request.*
+import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import org.koin.ktor.ext.inject
 
@@ -27,6 +27,14 @@ fun Application.configurarRutas() {
         post("/usuarios/login") {
             val inicioDeSesion = call.receive<InicioDeSesionReq>()
             repoLogin.loginUsuario(call, inicioDeSesion)
+        }
+        post("/usuarios/solicitar-recuperar-contrasena") {
+            val solicitarRecuperarContrasena = call.receive<RecuperarContrasenaReq>()
+            repoLogin.solicitarRecuperarContrasena(call, solicitarRecuperarContrasena)
+        }
+        post("/usuarios/cambiar-contrasena") {
+            val cambiarContrasena = call.receive<CambiarContrasenaReq>()
+            repoLogin.cambiarContrasena(call, cambiarContrasena)
         }
 
         authenticate {
@@ -46,6 +54,21 @@ fun Application.configurarRutas() {
 
             get("/clientes") {
                 repoUsuarios.listarClientes(call)
+            }
+
+            delete("/clientes/{id_cliente}") {
+                val idAdmin = call.principal<JWTPrincipal>()!!.subject!!
+                val idCliente = call.parameters["id_cliente"]!!
+
+                repoUsuarios.eliminarCliente(idAdmin, idCliente)
+                call.respond(HttpStatusCode.OK)
+            }
+
+            patch("/clientes/{id_cliente}") {
+                val idCliente = call.parameters["id_cliente"]!!
+                val usuario = call.receive<ActualizarClienteReq>()
+
+                repoUsuarios.actualizarCliente(call, idCliente, usuario)
             }
         }
     }

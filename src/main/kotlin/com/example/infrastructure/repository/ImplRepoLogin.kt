@@ -1,6 +1,9 @@
 package com.example.infrastructure.repository
 
+import com.example.application.req.CambiarContrasenaReq
 import com.example.application.req.InicioDeSesionReq
+import com.example.application.req.RecuperarContrasenaReq
+import com.example.application.req.ValidarCodigoReq
 import com.example.domain.ports.RepoJwt
 import com.example.domain.ports.RepoLogin
 import com.example.domain.ports.RepoUsuarios
@@ -21,7 +24,7 @@ class ImplRepoLogin(
 ) : RepoLogin {
 
     override suspend fun loginUsuario(call: ApplicationCall, inicioDeSesion: InicioDeSesionReq) {
-        suspend fun enviarTokenAlCliente(idUsuario: ObjectId) {
+        suspend fun enviarTokenAlCliente(call: ApplicationCall, idUsuario: ObjectId) {
             call.respond(
                 mapOf("token" to repoJwt.generarJwt(idUsuario).jwt)
             )
@@ -40,12 +43,12 @@ class ImplRepoLogin(
         if (contrasenasCoinciden) {
             if (usuario.metodoDeAutenticacion != null) {
                 if (usuario.metodoDeAutenticacion != inicioDeSesion.metodoDeAutenticacion) {
-                    call.respond(HttpStatusCode.Forbidden)
+                    return call.respond(HttpStatusCode.Forbidden)
                 }
             }
 
             if (inicioDeSesion.metodoDeAutenticacion == MetodoDeAutenticacion.RECONOCIMIENTO_FACIAL) {
-                enviarTokenAlCliente(idUsuario = usuario.id)
+                enviarTokenAlCliente(call, idUsuario = usuario.id)
             } else {
                 val respuesta = repoValidaciones.enviarCodigoAleatorio(
                     metodoDeAutenticacion = inicioDeSesion.metodoDeAutenticacion,
@@ -53,7 +56,7 @@ class ImplRepoLogin(
                 )
 
                 if (respuesta == RespuestaEnvioCodigo.ENVIADO) {
-                    enviarTokenAlCliente(idUsuario = usuario.id)
+                    enviarTokenAlCliente(call, idUsuario = usuario.id)
                 } else {
                     call.respond(HttpStatusCode.InternalServerError)
                 }
@@ -61,5 +64,61 @@ class ImplRepoLogin(
         } else {
             call.respond(HttpStatusCode.Unauthorized)
         }
+    }
+
+    override suspend fun solicitarRecuperarContrasena(
+        call: ApplicationCall,
+        recuperarContrasena: RecuperarContrasenaReq
+    ) {
+        // Para este ejemplo, usamos el siguiente flujo:
+
+        // 1. Buscamos el usuario por el email.
+
+        val usuario = repoUsuarios.obtenerUsuario(email = recuperarContrasena.email)
+            ?: return call.respond(HttpStatusCode.Unauthorized)
+
+        // 2. Si el usuario existe, generamos un código de recuperación y lo guardamos en la base de datos.
+
+        if (usuario.estado == EstadoDeCuenta.INACTIVO) {
+            // Usamos Forbidden para indicar que el usuario no está activo. Es personalizable.
+            return call.respond(HttpStatusCode.Forbidden)
+        }
+
+        // 3. Enviamos el código de recuperación al email del usuario.
+
+        val respuesta = repoValidaciones.enviarCodigoAleatorio(
+            metodoDeAutenticacion = MetodoDeAutenticacion.CODIGO_POR_EMAIL,
+            idUsuario = usuario.id
+        )
+
+        if (respuesta == RespuestaEnvioCodigo.ENVIADO) {
+            call.respond(HttpStatusCode.OK)
+        } else {
+            call.respond(HttpStatusCode.InternalServerError)
+        }
+    }
+
+    override suspend fun cambiarContrasena(call: ApplicationCall, cambiarContrasena: CambiarContrasenaReq) {
+        // 4. El usuario ingresa el código de recuperación junto a la nueva contraseña.
+
+        // -> cambiarContrasena
+
+        // 5. Si el código de recuperación es correcto, el usuario puede cambiar su contraseña.
+
+        repoValidaciones.validarCodigoPorEmail(
+            email = cambiarContrasena.email,
+            validarCodigo = ValidarCodigoReq(codigo = cambiarContrasena.codigo)
+        )
+
+        // En este punto tod0 fue OK, caso contrario se lanzará una Exception al main.
+
+        // 6. El usuario cambia su contraseña.
+
+        val contrasenaEncriptada = Password.hash(cambiarContrasena.nuevoContrasena).withArgon2()
+        repoUsuarios.cambiarContrasena(email = cambiarContrasena.email, nuevaContrasena = contrasenaEncriptada.result)
+
+        // 7. El usuario inicia sesión con su nueva contraseña.
+
+        call.respond(HttpStatusCode.OK)
     }
 }

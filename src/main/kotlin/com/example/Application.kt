@@ -38,9 +38,10 @@ import org.bson.types.ObjectId
 import org.koin.dsl.module
 import org.koin.ktor.ext.inject
 import org.koin.ktor.plugin.Koin
+import org.opencv.core.Core
 
 fun main() {
-    // System.loadLibrary(Core.NATIVE_LIBRARY_NAME)
+    System.loadLibrary(Core.NATIVE_LIBRARY_NAME)
 
     embeddedServer(
         Netty,
@@ -68,6 +69,10 @@ private fun Application.configurarCORS() {
         if (modoDesarrollo) anyHost()
         allowHeader(HttpHeaders.ContentType)
         allowHeader(HttpHeaders.Authorization)
+        allowMethod(HttpMethod.Post)
+        allowMethod(HttpMethod.Patch)
+        allowMethod(HttpMethod.Delete)
+        allowMethod(HttpMethod.Get)
     }
 }
 
@@ -213,5 +218,8 @@ private fun Application.configurarValidacionesModelosEnSolicitudes() {
         validate<InicioDeSesionReq> { it.validarFormato() }
         validate<ValidarCodigoReq> { it.validarFormato() }
         validate<ValidarRostroReq> { it.validarFormato() }
+        validate<ActualizarClienteReq> { it.validarFormato() }
+        validate<RecuperarContrasenaReq> { it.validate() }
+        validate<CambiarContrasenaReq> { it.validate() }
     }
 }
