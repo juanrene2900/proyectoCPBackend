@@ -30,18 +30,18 @@ class DetectorDeRostros private constructor() {
         private fun compararRostros(rostroGuardado: Mat, rostroAComparar: Mat): Boolean {
             val reconocimientoFacial = Face.createLBPHFaceRecognizer()
 
-            // Convertimos las imágenes a escala de grises
+            // Convertimos las imágenes a escala de grises.
             val rostroGuardadoGris = Mat()
             val rostroACompararGris = Mat()
             Imgproc.cvtColor(rostroGuardado, rostroGuardadoGris, Imgproc.COLOR_BGR2GRAY)
             Imgproc.cvtColor(rostroAComparar, rostroACompararGris, Imgproc.COLOR_BGR2GRAY)
 
-            // Entrenamos el rostro guardado
+            // Entrenamos el rostro guardado.
             val rostrosAEntrenar = listOf(rostroGuardadoGris)
             val etiquetasDeEntrenamiento = MatOfInt(1)
             reconocimientoFacial.train(rostrosAEntrenar, etiquetasDeEntrenamiento)
 
-            // Ejecutamos el reconocimiento facial
+            // Ejecutamos el reconocimiento facial.
             val resultadoEtiquetas = IntArray(1)
             val resultadoConfianzas = DoubleArray(1)
             reconocimientoFacial.predict(rostroACompararGris, resultadoEtiquetas, resultadoConfianzas)
@@ -53,5 +53,5 @@ class DetectorDeRostros private constructor() {
     }
 }
 
-// Entre mayor sea el valor más diferentes serán los rostros
+// Entre mayor sea el valor más diferentes serán los rostros.
 private const val UMBRAL_CONFIANZA = 25

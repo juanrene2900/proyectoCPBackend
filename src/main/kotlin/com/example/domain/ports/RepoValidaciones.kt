@@ -7,11 +7,16 @@ import com.example.enums.RespuestaEnvioCodigo
 import io.ktor.server.application.*
 import org.bson.types.ObjectId
 
-interface RepositorioValidaciones {
+interface RepoValidaciones {
 
     suspend fun validarCodigo(call: ApplicationCall, validarCodigo: ValidarCodigoReq)
 
+    suspend fun validarCodigoPorEmail(email: String, validarCodigo: ValidarCodigoReq)
+
     suspend fun validarRostro(call: ApplicationCall, validarRostro: ValidarRostroReq)
 
-    suspend fun enviarCodigo(idUsuario: ObjectId, metodoDeAutenticacion: MetodoDeAutenticacion): RespuestaEnvioCodigo
+    suspend fun enviarCodigoAleatorio(
+        idUsuario: ObjectId,
+        metodoDeAutenticacion: MetodoDeAutenticacion
+    ): RespuestaEnvioCodigo
 }

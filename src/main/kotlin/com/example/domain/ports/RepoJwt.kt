@@ -3,7 +3,7 @@ package com.example.domain.ports
 import com.example.domain.entities.JsonWebToken
 import org.bson.types.ObjectId
 
-interface RepositorioJwt {
+interface RepoJwt {
 
     suspend fun generarJwt(idUsuario: ObjectId): JsonWebToken
 

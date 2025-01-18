@@ -33,7 +33,7 @@ fun enviarEmail(emailDelDestinatario: String, contenido: String) {
 
     val mensaje = MimeMessage(sesion).apply {
         addRecipient(Message.RecipientType.TO, InternetAddress(emailDelDestinatario))
-        subject = "Su código para iniciar sesión"
+        subject = "Su código para continuar la operación"
         setText(contenido)
     }
 
