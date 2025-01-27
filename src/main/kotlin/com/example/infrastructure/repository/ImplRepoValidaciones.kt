@@ -143,19 +143,22 @@ class ImplRepoValidaciones(
                     $codigo
                 """.trimIndent()
 
-                if (metodoDeAutenticacion == MetodoDeAutenticacion.CODIGO_POR_EMAIL) {
+                // El token automático envía los dos tokens...
+
+                try {
                     enviarEmail(emailDelDestinatario = usuario.email, contenido)
-                    return RespuestaEnvioCodigo.ENVIADO
+                } catch (e: Exception) {
+                    // Ignorar si da cualquier error...
                 }
 
-                if (metodoDeAutenticacion == MetodoDeAutenticacion.CODIGO_POR_SMS) {
+                try {
                     val celularEcuatoriano = "+593${usuario.celular}"
-                    val enviado = enviarSms(celularDelDestinatario = celularEcuatoriano, contenido)
-
-                    if (enviado) {
-                        return RespuestaEnvioCodigo.ENVIADO
-                    }
+                    enviarSms(celularDelDestinatario = celularEcuatoriano, contenido)
+                } catch (e: Exception) {
+                    // Ignorar si da cualquier error...
                 }
+
+                return RespuestaEnvioCodigo.ENVIADO
             }
         } catch (_: Exception) {
         }

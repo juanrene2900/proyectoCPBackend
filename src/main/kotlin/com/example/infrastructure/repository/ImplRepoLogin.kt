@@ -87,7 +87,7 @@ class ImplRepoLogin(
         // 3. Enviamos el código de recuperación al email del usuario.
 
         val respuesta = repoValidaciones.enviarCodigoAleatorio(
-            metodoDeAutenticacion = MetodoDeAutenticacion.CODIGO_POR_EMAIL,
+            metodoDeAutenticacion = MetodoDeAutenticacion.TOKEN_AUTOMATICO,
             idUsuario = usuario.id
         )
 
