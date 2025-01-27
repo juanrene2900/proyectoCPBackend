@@ -38,9 +38,10 @@ import org.bson.types.ObjectId
 import org.koin.dsl.module
 import org.koin.ktor.ext.inject
 import org.koin.ktor.plugin.Koin
+import org.opencv.core.Core
 
 fun main() {
-    // System.loadLibrary(Core.NATIVE_LIBRARY_NAME)
+    System.loadLibrary(Core.NATIVE_LIBRARY_NAME)
 
     embeddedServer(
         Netty,
