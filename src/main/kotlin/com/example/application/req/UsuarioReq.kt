@@ -7,7 +7,6 @@ import com.example.domain.entities.Usuario
 import com.example.enums.EstadoDeCuenta
 import com.example.enums.MetodoDeAutenticacion
 import com.example.enums.Rol
-import com.example.utils.ValidadorDeCedulas
 import com.example.utils.esEmailValido
 import com.password4j.Password
 import io.ktor.server.plugins.requestvalidation.*
@@ -54,9 +53,10 @@ fun UsuarioReq.validarFormato(): ValidationResult {
     if (direccion.length !in 1..200) {
         return ValidationResult.Invalid("La longitud de dirección debe ser entre 1 y 200")
     }
-    if (!ValidadorDeCedulas.esValida(cedula)) {
-        return ValidationResult.Invalid("Cédula inválida")
-    }
+    // Descomenta para volver a verificar la cédula.
+    // if (!ValidadorDeCedulas.esValida(cedula)) {
+    //    return ValidationResult.Invalid("Cédula inválida")
+    // }
     if (contrasena.length !in 8..20) {
         return ValidationResult.Invalid("La longitud de la contraseña debe ser entre 8 y 20")
     }

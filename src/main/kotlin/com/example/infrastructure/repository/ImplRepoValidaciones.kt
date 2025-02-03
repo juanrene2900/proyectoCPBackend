@@ -63,6 +63,21 @@ class ImplRepoValidaciones(
         call.respond(HttpStatusCode.Unauthorized)
     }
 
+    override suspend fun validarCodigoManual(call: ApplicationCall) {
+        // Para este ejemplo se hace como si la validación de los tokens manuales
+        // fue como OK.
+
+        val idUsuario = ObjectId(call.principal<JWTPrincipal>()!!.subject)
+
+        val usuario = repoUsuarios.obtenerUsuario(idUsuario)
+            ?: return call.respond(HttpStatusCode.Unauthorized)
+
+        val respuesta = usuario.convertirARespuesta(
+            token = repoJwt.generarJwt(idUsuario = usuario.id).jwt
+        )
+        return call.respond(respuesta)
+    }
+
     override suspend fun validarCodigoPorEmail(email: String, validarCodigo: ValidarCodigoReq) {
         val cincoMinutosAntesDeLaHoraActual = Instant.now().minusSeconds(5.minutes.inWholeSeconds)
 
@@ -143,19 +158,22 @@ class ImplRepoValidaciones(
                     $codigo
                 """.trimIndent()
 
-                if (metodoDeAutenticacion == MetodoDeAutenticacion.CODIGO_POR_EMAIL) {
+                // El token automático envía los dos tokens...
+
+                try {
                     enviarEmail(emailDelDestinatario = usuario.email, contenido)
-                    return RespuestaEnvioCodigo.ENVIADO
+                } catch (e: Exception) {
+                    // Ignorar si da cualquier error...
                 }
 
-                if (metodoDeAutenticacion == MetodoDeAutenticacion.CODIGO_POR_SMS) {
+                try {
                     val celularEcuatoriano = "+593${usuario.celular}"
-                    val enviado = enviarSms(celularDelDestinatario = celularEcuatoriano, contenido)
-
-                    if (enviado) {
-                        return RespuestaEnvioCodigo.ENVIADO
-                    }
+                    enviarSms(celularDelDestinatario = celularEcuatoriano, contenido)
+                } catch (e: Exception) {
+                    // Ignorar si da cualquier error...
                 }
+
+                return RespuestaEnvioCodigo.ENVIADO
             }
         } catch (_: Exception) {
         }

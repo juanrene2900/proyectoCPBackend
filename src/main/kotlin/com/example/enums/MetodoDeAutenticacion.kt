@@ -1,7 +1,7 @@
 package com.example.enums
 
 enum class MetodoDeAutenticacion(val id: String) {
-    CODIGO_POR_EMAIL("codigo_por_email"),
-    CODIGO_POR_SMS("codigo_por_sms"),
+    TOKEN_MANUAL("token_manual"),
+    TOKEN_AUTOMATICO("token_automatico"),
     RECONOCIMIENTO_FACIAL("reconocimiento_facial"),
 }

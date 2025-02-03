@@ -18,6 +18,7 @@ import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
 import io.ktor.server.response.*
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.singleOrNull
 import kotlinx.coroutines.flow.toList
 import org.bson.types.ObjectId
@@ -43,7 +44,7 @@ class ImplRepoUsuarios(db: MongoDatabase) : RepoUsuarios {
 
     override suspend fun obtenerUsuario(idUsuario: ObjectId): Usuario? {
         val filtroUsuario = Filters.eq(Usuario::id.serialName, idUsuario)
-        return usuarios.find(filtroUsuario).singleOrNull()
+        return usuarios.find(filtroUsuario).firstOrNull()
     }
 
     override suspend fun cambiarContrasena(email: String, nuevaContrasena: String) {

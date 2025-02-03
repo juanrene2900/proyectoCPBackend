@@ -42,6 +42,9 @@ fun Application.configurarRutas() {
                 val validarCodigo = call.receive<ValidarCodigoReq>()
                 repoValidaciones.validarCodigo(call, validarCodigo)
             }
+            post("/usuarios/validar-codigo-manual") {
+                repoValidaciones.validarCodigoManual(call)
+            }
             post("/usuarios/validar-rostro") {
                 val validarRostro = call.receive<ValidarRostroReq>()
                 repoValidaciones.validarRostro(call, validarRostro)

@@ -49,7 +49,7 @@ class ImplRepoLogin(
 
             if (inicioDeSesion.metodoDeAutenticacion == MetodoDeAutenticacion.RECONOCIMIENTO_FACIAL) {
                 enviarTokenAlCliente(call, idUsuario = usuario.id)
-            } else {
+            } else if (inicioDeSesion.metodoDeAutenticacion == MetodoDeAutenticacion.TOKEN_AUTOMATICO) {
                 val respuesta = repoValidaciones.enviarCodigoAleatorio(
                     metodoDeAutenticacion = inicioDeSesion.metodoDeAutenticacion,
                     idUsuario = usuario.id
@@ -60,6 +60,10 @@ class ImplRepoLogin(
                 } else {
                     call.respond(HttpStatusCode.InternalServerError)
                 }
+            } else {
+                // Para token manual, no enviamos el token automáticamente.
+                // El token se genera en el cliente y es enviado al backend.
+                enviarTokenAlCliente(call, idUsuario = usuario.id)
             }
         } else {
             call.respond(HttpStatusCode.Unauthorized)
@@ -87,7 +91,7 @@ class ImplRepoLogin(
         // 3. Enviamos el código de recuperación al email del usuario.
 
         val respuesta = repoValidaciones.enviarCodigoAleatorio(
-            metodoDeAutenticacion = MetodoDeAutenticacion.CODIGO_POR_EMAIL,
+            metodoDeAutenticacion = MetodoDeAutenticacion.TOKEN_AUTOMATICO,
             idUsuario = usuario.id
         )
 
