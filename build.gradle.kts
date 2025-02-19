@@ -70,5 +70,5 @@ dependencies {
     implementation("com.twilio.sdk:twilio:10.4.2")
 
     // Para usar opencv.
-    implementation(files("libs/opencv-4100.jar"))
+    implementation(files("libs/opencv-310.jar"))
 }
